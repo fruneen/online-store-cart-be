@@ -1,7 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["interactiveTransactions"]
-  binaryTargets = ["rhel-openssl-1.0.x", "darwin-arm64"]
+  binaryTargets   = ["rhel-openssl-1.0.x", "darwin-arm64"]
 }
 
 datasource db {
@@ -10,15 +10,37 @@ datasource db {
 }
 
 model Product {
-  id          String    @id @default(uuid())
+  id          String     @id @default(uuid())
   title       String
   description String
   price       Int
   stock       Stock?
+  CartItem    CartItem[]
 }
 
 model Stock {
   product   Product @relation(fields: [productId], references: [id])
-  productId String @unique
+  productId String  @unique
   count     Int
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  CartItem  CartItem[]
+}
+
+model CartItem {
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  cartId    String  @id
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  count     Int
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  password String
 }
