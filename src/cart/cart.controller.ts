@@ -2,6 +2,7 @@ import { Controller, Get, Delete, Put, Body, Req, Post, UseGuards, HttpStatus, H
 
 import { BasicAuthGuard } from '../auth';
 import { OrderService } from '../order';
+import { PrismaService } from '../prisma.service';
 import { AppRequest, getUserIdFromRequest } from '../shared';
 
 import { calculateCartTotal } from './models-rules';
@@ -11,7 +12,8 @@ import { CartService } from './services';
 export class CartController {
   constructor(
     private cartService: CartService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private prismaService: PrismaService,
   ) { }
 
   // @UseGuards(JwtAuthGuard)
@@ -75,20 +77,22 @@ export class CartController {
     const { id: cartId, items } = cart;
     const total = calculateCartTotal(cart);
 
-    const order = await this.orderService.create({
-      ...body, // TODO: validate and pick only necessary data
-      userId,
-      cartId,
-      items,
-      total,
+    return await this.prismaService.$transaction(async (prisma) => {
+      const order = await this.orderService.create({
+        ...body, // TODO: validate and pick only necessary data
+        userId,
+        cartId,
+        items,
+        total,
+      }, prisma);
+
+      await this.cartService.removeByUserId(userId, prisma);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'OK',
+        data: { order }
+      }
     });
-
-    await this.cartService.removeByUserId(userId);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'OK',
-      data: { order }
-    }
   }
 }

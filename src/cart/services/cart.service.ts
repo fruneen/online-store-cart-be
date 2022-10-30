@@ -51,14 +51,10 @@ export class CartService {
   async updateByUserId(userId: string, { items }: Cart): Promise<Cart> {
     const { id: cartId } = await this.findOrCreateByUserId(userId);
 
-    console.log(items)
-
     await Promise.all(items.map(async (item) => {
       const { id: productId } = item.product;
 
-      console.log(productId, productId)
-
-      const res = await this.prisma.cartItem.upsert({
+      await this.prisma.cartItem.upsert({
         where: {
           cartId_productId: {
             cartId,
@@ -74,8 +70,6 @@ export class CartService {
           count: item.count,
         }
       });
-
-      console.log(res)
     }))
 
     const createdItems = await this.prisma.cartItem.findMany({
@@ -91,10 +85,12 @@ export class CartService {
     }
   }
 
-  async removeByUserId(userId): Promise<void> {
+  async removeByUserId(userId, prismaService?): Promise<void> {
+    const prisma = prismaService || this.prisma;
+
     const { id: cartId } = await this.findOrCreateByUserId(userId);
 
-    await this.prisma.cartItem.deleteMany({
+    await prisma.cartItem.deleteMany({
       where: { cartId },
     });
   }

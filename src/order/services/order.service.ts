@@ -13,8 +13,10 @@ export class OrderService {
     });
   }
 
-  async create({ userId, cartId, items, payment, delivery, comments, total }): Promise<Order> {
-    return await this.prisma.order.create({
+  async create({ userId, cartId, items, payment, delivery, comments, total }, prismaService?): Promise<Order> {
+    const prisma = prismaService || this.prisma;
+
+    return await prisma.order.create({
       data: {
         userId,
         cartId,
