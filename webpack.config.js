@@ -1,7 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const webpack = require('webpack');
-const slsw = require('serverless-webpack');
-const nodeExternals = require('webpack-node-externals');
 const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = function (options) {
@@ -12,9 +10,6 @@ module.exports = function (options) {
 
   return {
     ...options,
-    mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
-    entry: slsw.lib.entries,
-    externals: [nodeExternals()],
     plugins: [
       ...options.plugins,
       new webpack.IgnorePlugin({

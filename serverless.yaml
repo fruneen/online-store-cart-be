@@ -1,32 +1,36 @@
 service: cart-service
 frameworkVersion: '3'
 
-#useDotenv: true
+useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs16.x
   region: eu-central-1
   profile: personal
-#  environment:
-#    DATABASE_URL: ${env:DATABASE_URL}
+  environment:
+    DATABASE_URL: ${env:DATABASE_URL}
 
-package:
-  exclude:
-    - node_modules/**
-    - src/**
+custom:
+  webpack:
+    webpackConfig: ./webpack.serverless.config.js
+    includeModules: true
 
 plugins:
-#  - serverless-webpack-prisma
+  - serverless-webpack
+  - serverless-webpack-prisma
   - serverless-offline
 
 functions:
   main:
     handler: dist/main.handler
     events:
-      - http:
+      - httpApi:
           method: ANY
           path: /
-      - http:
+          cors: true
+
+      - httpApi:
           method: ANY
-          path: '{proxy+}'
+          path: '/{proxy+}'
+          cors: true
