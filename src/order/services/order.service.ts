@@ -1,39 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { v4 } from 'uuid';
 
 import { Order } from '../models';
+import { PrismaService } from '../../prisma.service';
 
 @Injectable()
 export class OrderService {
-  private orders: Record<string, Order> = {}
+  constructor(private prisma: PrismaService) {}
 
-  findById(orderId: string): Order {
-    return this.orders[ orderId ];
+  async findById(id: string): Promise<Order> {
+    return await this.prisma.order.findUnique({
+      where: { id },
+    });
   }
 
-  create(data: any) {
-    const id = v4(v4())
-    const order = {
-      ...data,
-      id,
-      status: 'inProgress',
-    };
+  async create({ userId, cartId, items, payment, delivery, comments, total }, prismaService?): Promise<Order> {
+    const prisma = prismaService || this.prisma;
 
-    this.orders[ id ] = order;
-
-    return order;
+    return await prisma.order.create({
+      data: {
+        userId,
+        cartId,
+        total,
+        items,
+        payment,
+        delivery,
+        comments,
+      }
+    });
   }
 
-  update(orderId, data) {
-    const order = this.findById(orderId);
-
-    if (!order) {
-      throw new Error('Order does not exist.');
-    }
-
-    this.orders[ orderId ] = {
-      ...data,
-      id: orderId,
-    }
+  async update(orderId, data): Promise<Order> {
+    return await this.prisma.order.update({
+      where: { id: orderId },
+      data,
+    });
   }
 }
