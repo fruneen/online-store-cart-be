@@ -16,16 +16,16 @@ async function bootstrap(): Promise<Handler> {
 
   app.use(helmet());
 
-  // await app.listen(4000);
+  await app.listen(4000);
   await app.init();
 
   const expressApp = app.getHttpAdapter().getInstance();
   return serverlessExpress({ app: expressApp });
 }
 
-// bootstrap().then(() => {
-//   console.log('App is running on %s port', 4000);
-// });
+bootstrap().then(() => {
+  console.log('App is running on %s port', 4000);
+});
 
 export const handler: Handler = async (
   event: any,
