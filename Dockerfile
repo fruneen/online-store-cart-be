@@ -8,6 +8,7 @@ WORKDIR /usr/src/app
 # A wildcard is used to ensure copying both package.json AND package-lock.json (when available).
 # Copying this first prevents re-running npm install on every code change.
 COPY package*.json ./
+COPY prisma ./prisma/
 
 # Install app dependencies using the `npm ci` command instead of `npm install`
 RUN npm ci
@@ -24,11 +25,14 @@ FROM node:16-alpine As build
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+COPY prisma ./prisma/
 
 # In order to run `npm run build` we need access to the Nest CLI which is a dev dependency. In the previous development stage we ran `npm ci` which installed all dependencies, so we can copy over the node_modules directory from the development image
 COPY --from=development /usr/src/app/node_modules ./node_modules
 
 COPY . .
+
+RUN npm run prisma:generate
 
 # Run the build command which creates the production bundle
 RUN npm run build
